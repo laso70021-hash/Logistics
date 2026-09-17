@@ -216,7 +216,15 @@ export default function TrackingPage() {
                           <p className="font-semibold text-gray-900 capitalize">{event.status.replace('_', ' ')}</p>
                           <p className="text-sm text-gray-500 mt-1">{format(new Date(event.created_at), 'MMM d, yyyy • h:mm a')}</p>
                           {event.note && (
-                            <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">{event.note}</p>
+                            <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                              {event.note.startsWith('Exception:') ? (
+                                <>
+                                  <span className="font-bold">Exception:</span>{event.note.substring(10)}
+                                </>
+                              ) : (
+                                event.note
+                              )}
+                            </p>
                           )}
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { Search, Package, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../../hooks/useAuth';
+import EditShipmentModal from '../../components/EditShipmentModal';
 
 export default function MasterShipments() {
   const [shipments, setShipments] = useState<any[]>([]);
@@ -11,6 +12,7 @@ export default function MasterShipments() {
   const { profile } = useAuth();
   
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
+  const [editingShipment, setEditingShipment] = useState<any>(null);
 
   useEffect(() => {
     fetchShipments();
@@ -70,17 +72,17 @@ export default function MasterShipments() {
                 <th className="px-6 py-4 font-medium">Route</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium">Date</th>
-                {isAdmin && <th className="px-6 py-4 font-medium">Actions</th>}
+                <th className="px-6 py-4 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-500">Loading shipments...</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">Loading shipments...</td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-6 py-12 text-center text-gray-500 flex flex-col items-center">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 flex flex-col items-center">
                     <Package className="w-12 h-12 text-gray-300 mb-3" />
                     <p>No shipments found.</p>
                   </td>
@@ -108,7 +110,7 @@ export default function MasterShipments() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase tracking-wider
-                        ${s.status === 'order_created' ? 'bg-gray-100 text-gray-700' : ''}
+                        ${s.status === 'order_created' ? 'bg-gray-100 text-gray-700' : ''} ${s.status === 'picked_up' ? 'bg-indigo-100 text-indigo-700' : ''}
                         ${s.status === 'in_transit' ? 'bg-blue-100 text-blue-700' : ''}
                         ${s.status === 'out_for_delivery' ? 'bg-yellow-100 text-yellow-700' : ''}
                         ${s.status === 'delivered' ? 'bg-green-100 text-green-700' : ''}
@@ -120,11 +122,9 @@ export default function MasterShipments() {
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {format(new Date(s.created_at), 'MMM d, yyyy')}
                     </td>
-                    {isAdmin && (
-                      <td className="px-6 py-4 text-sm">
-                         <button className="text-blue-600 hover:text-blue-800 font-medium">Manage</button>
+                                        <td className="px-6 py-4 text-sm">
+                         <button onClick={() => setEditingShipment(s)} className="text-blue-600 hover:text-blue-800 font-medium">Manage</button>
                       </td>
-                    )}
                   </tr>
                 ))
               )}
@@ -132,6 +132,14 @@ export default function MasterShipments() {
           </table>
         </div>
       </div>
+      {editingShipment && (
+        <EditShipmentModal
+          shipment={editingShipment}
+          onClose={() => setEditingShipment(null)}
+          onUpdate={fetchShipments}
+          agentId={profile?.id}
+        />
+      )}
     </div>
   );
 }

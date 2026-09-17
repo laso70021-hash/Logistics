@@ -98,7 +98,7 @@ export default function WarehouseInventory() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase tracking-wider
-                        ${s.status === 'order_created' ? 'bg-gray-100 text-gray-700' : ''}
+                        ${s.status === 'order_created' ? 'bg-gray-100 text-gray-700' : ''} ${s.status === 'picked_up' ? 'bg-indigo-100 text-indigo-700' : ''}
                         ${s.status === 'in_transit' ? 'bg-blue-100 text-blue-700' : ''}
                         ${s.status === 'out_for_delivery' ? 'bg-yellow-100 text-yellow-700' : ''}
                         ${s.status === 'exception' ? 'bg-red-100 text-red-700' : ''}
