@@ -5,8 +5,12 @@ import {
   ScanLine, Package, Truck, FileText, Settings, Users,
   LogOut, ShieldAlert, Activity, ClipboardList, Menu, X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Mail } from 'lucide-react';
+import { connectGmail, getGmailToken } from '../lib/gmail';
+import toast from 'react-hot-toast';
 import { cn } from '../lib/utils';
+import GlobalSearch from '../components/GlobalSearch';
 
 export default function DashboardLayout() {
   const { profile, signOut } = useAuth();
@@ -26,6 +30,11 @@ export default function DashboardLayout() {
     { name: 'Settings', to: '/agent/settings', icon: Settings, category: 'Settings & Account' },
   ];
 
+  const customerLinks = [
+    { name: 'My Shipments', to: '/customer', icon: Package, category: 'Dashboard' },
+    { name: 'Receive Package (QR)', to: '/customer/receive', icon: ScanLine, category: 'Actions' },
+  ];
+
   const adminLinks = [
     { name: 'Overview', to: '/admin', icon: LayoutDashboard, category: 'Dashboard' },
     { name: 'Agents Directory', to: '/admin/agents', icon: Users, category: 'User & Agent Management' },
@@ -37,7 +46,7 @@ export default function DashboardLayout() {
     { name: 'Audit Logs', to: '/admin/logs', icon: ClipboardList, category: 'System & Analytics' },
   ];
 
-  const links = isAdmin ? adminLinks : agentLinks;
+  const links = isAdmin ? adminLinks : (profile?.role === 'customer' ? customerLinks : agentLinks);
 
   // Group links by category
   const categories = Array.from(new Set(links.map(l => l.category)));
@@ -101,6 +110,29 @@ export default function DashboardLayout() {
         </div>
 
         <div className="p-4 border-t border-gray-800">
+          
+          <div className="mb-4">
+            <button
+              onClick={async () => {
+                if (!getGmailToken()) {
+                  try {
+                    await connectGmail();
+                    toast.success('Gmail Connected Successfully');
+                  } catch (e: any) {
+                    toast.error(e.message || 'Failed to connect Gmail');
+                  }
+                } else {
+                  toast.success('Gmail is already connected');
+                }
+              }}
+              className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors border border-gray-700"
+            >
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-red-400" />
+                <span>Connect Gmail</span>
+              </div>
+            </button>
+          </div>
           <div className="flex items-center gap-3 mb-4 px-2">
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
               {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
@@ -122,6 +154,11 @@ export default function DashboardLayout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 md:pt-0 pt-16 h-screen overflow-y-auto">
+        {(isAdmin || profile?.role === 'agent') && (
+          <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 md:px-8 py-3 flex items-center justify-end">
+            <GlobalSearch />
+          </div>
+        )}
         <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
           <Outlet />
         </div>

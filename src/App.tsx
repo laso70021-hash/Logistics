@@ -14,6 +14,10 @@ import SignUpPage from './pages/public/SignUpPage';
 import AboutPage from './pages/public/AboutPage';
 import ContactPage from './pages/public/ContactPage';
 
+// Private Pages - Customer
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+import CustomerScanReceive from './pages/customer/CustomerScanReceive';
+
 // Private Pages - Agent
 import AgentDashboard from './pages/agent/AgentDashboard';
 import RegisterPackage from './pages/agent/RegisterPackage';
@@ -84,6 +88,16 @@ function AppRoutes() {
       {/* Auth */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+
+      {/* Customer Routes */}
+      <Route path="/customer" element={
+        <ProtectedRoute allowedRoles={['customer', 'agent', 'admin', 'super_admin']}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<CustomerDashboard />} />
+        <Route path="receive" element={<CustomerScanReceive />} />
+      </Route>
 
       {/* Agent Routes */}
       <Route path="/agent" element={

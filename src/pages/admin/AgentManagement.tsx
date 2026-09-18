@@ -3,6 +3,7 @@ import { supabase, SUPABASE_URL, SUPABASE_PUBLIC_KEY } from '../../lib/supabase'
 import { createClient } from '@supabase/supabase-js';
 import { Users, Search, CheckCircle, XCircle, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { sendEmail, getGmailToken } from '../../lib/gmail';
 
 export default function AgentManagement() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -100,6 +101,26 @@ export default function AgentManagement() {
       }
 
       toast.success('Agent created successfully!');
+      
+      // Send Email to Agent
+      if (getGmailToken()) {
+        try {
+          await sendEmail(
+            newAgent.email,
+            'Welcome to CargoFlow - Agent Account Created',
+            `<h1>Welcome to CargoFlow</h1>
+             <p>Hello ${newAgent.fullName},</p>
+             <p>An administrator has created an account for you.</p>
+             <p><strong>Email:</strong> ${newAgent.email}<br/>
+             <strong>Password:</strong> ${newAgent.password}</p>
+             <p>Please log in and change your password as soon as possible.</p>`
+          );
+          toast.success('Welcome email sent to agent via Gmail!');
+        } catch (emailErr: any) {
+          console.error(emailErr);
+          toast.error('Agent created, but failed to send email: ' + emailErr.message);
+        }
+      }
       setShowModal(false);
       setNewAgent({ fullName: '', email: '', password: '', role: 'agent', station: '', region: '' });
       fetchAgents();

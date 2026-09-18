@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import { sendEmail, getGmailToken } from '../../lib/gmail';
 import { PackageSearch } from 'lucide-react';
 
 export default function SignUpPage() {
@@ -32,6 +33,17 @@ export default function SignUpPage() {
         navigate('/agent');
       } else {
         toast.success("Your account has been created. Please check your email and verify your address before logging in.", { duration: 5000 });
+        
+        if (getGmailToken()) {
+          try {
+            await sendEmail(
+              email,
+              'Welcome to CargoFlow!',
+              `<h2>Welcome ${fullName}</h2><p>Thank you for signing up for CargoFlow.</p>`
+            );
+          } catch(e) {}
+        }
+
         navigate('/login', { state: { email } });
       }
     } catch (error: any) {

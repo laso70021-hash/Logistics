@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { sendEmail, getGmailToken } from '../lib/gmail';
 import { X, Save, Clock, MapPin, Tag } from 'lucide-react';
 import { Shipment, ShipmentStatus } from '../types';
 
@@ -92,6 +93,24 @@ export default function EditShipmentModal({ shipment, onClose, onUpdate, agentId
       }
 
       toast.success('Status updated successfully');
+      
+      if (getGmailToken() && shipment.sender_email) {
+        try {
+          await sendEmail(
+            shipment.sender_email,
+            `Shipment Update: ${shipment.tracking_number}`,
+            `<h2>Shipment Status Update</h2>
+             <p>Your shipment <strong>${shipment.tracking_number}</strong> status has been updated to <strong>${newStatus.replace('_', ' ').toUpperCase()}</strong>.</p>
+             <p><strong>Location:</strong> ${location || 'N/A'}</p>
+             ${finalNote ? `<p><strong>Note:</strong> ${finalNote}</p>` : ''}
+             <p>Thank you for using CargoFlow!</p>`
+          );
+          toast.success('Email notification sent to customer!');
+        } catch (e: any) {
+          console.error(e);
+          toast.error('Failed to send email notification');
+        }
+      }
       onUpdate();
       onClose();
     } catch (error: any) {
